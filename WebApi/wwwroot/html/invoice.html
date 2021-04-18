@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.0/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="../scripts/invoice.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="/index.html">MyApp</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link" href="../index.html">Home</a>
+                    <a class="nav-item nav-link" href="employee.html">Employee</a>
+                    <a class="nav-item nav-link active" href="#">Invoice <span class="sr-only">(current)</span></a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div id="invoiceContainer" class="tableContainer">
+        <h2>Invoices</h2>
+        <table class="table table-bordered table-striped table-hover table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Number</th>
+                    <th>Date</th>
+                    <th>Sum</th>
+                    <th>Employee Name</th>
+                    <th>Details</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: Invoices">
+                <tr>
+                    <td data-bind="text: Id"></td>
+                    <td data-bind="text: InvoiceNumber"></td>
+                    <td data-bind="text: ExecutionDate"></td>
+                    <td data-bind="text: Sum"></td>
+                    <td data-bind="text: Employee.Name"></td>
+                    <td><a href="#" data-bind="click: ShowDetails">Details</a></td>
+                    <td><a href="#" data-bind="click: TryUpdate">edit</a></td>
+                    <td><a href="#" data-bind="click: parent.TryDeleteInvoice">delete</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn btn-primary" data-bind="click: TryAddInvoice">add new</button>
+
+    </div>
+
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Description</th>
+                                <th>Sum</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: Details">
+                            <tr>
+                                <td data-bind="text: Id"></td>
+                                <td data-bind="text: Description"></td>
+                                <td data-bind="text: Sum"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="editInvoiceModalForm" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit invoice</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form data-bind="with: CurrentInvoice">
+                        <div class="form-group">
+                            <label for="invoiceId" class="col-form-label">Id</label>
+                            <input type="text" class="form-control" id="invoiceId" data-bind="value: Id, enable: false">
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceNumber" name class="col-form-label">Invoice Number</label>
+                            <input type="text" class="form-control" id="invoiceNumber" data-bind="value: InvoiceNumber" />
+                        </div>
+                        <div class="form-group">
+                            <label for="date" class="col-form-label">Date</label>
+                            <input type="datetime-local" class="form-control" id="date" data-bind="value: ExecutionDate" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sum" class="col-form-label">Sum</label>
+                            <input type="number" class="form-control" id="sum" data-bind="value: Sum, enable: false" />
+                        </div>
+                        <dir class="form-group">
+                            <label></label>
+                            <select data-bind="options: AvailableEmployees, optionsText: 'Name', value: SelectedEmployee"></select>
+                        </dir>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Description</th>
+                                    <th>Sum</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: parent.Details">
+                                <tr>
+                                    <td data-bind="text: Id"><</td>
+                                    <td><input type="text" data-bind="value: Description" /></td>
+                                    <td><input type="number" data-bind="value: Sum" /></td>
+                                    <td><a href="#" data-bind="click: DeleteDetails">delete</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <a href="#" data-bind="click: AddDetails">Add details</a>
+                    </form>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: Update">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal fade" id="createInvoiceModalForm" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add invoice</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form data-bind="with: CurrentInvoice">
+                        <div class="form-group">
+                            <label for="invoiceNumber" name class="col-form-label">Invoice Number</label>
+                            <input type="text" class="form-control" id="invoiceNumber" data-bind="value: InvoiceNumber" />
+                        </div>
+                        <div class="form-group">
+                            <label for="date" class="col-form-label">Date</label>
+                            <input type="datetime-local" class="form-control" id="date" data-bind="value: ExecutionDate" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sum" class="col-form-label">Sum</label>
+                            <input type="number" class="form-control" id="sum" data-bind="value: Sum, enable: false" />
+                        </div>
+                        <dir class="form-group">
+                            <label></label>
+                            <select data-bind="options: AvailableEmployees, optionsText: 'Name', value: SelectedEmployee"></select>
+                        </dir>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Sum</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: parent.Details">
+                            <tr>
+                                <td><input type="text" data-bind="value: Description" /></td>
+                                <td><input type="number" data-bind="value: Sum" /></td>
+                                <td><a href="#" data-bind="click: DeleteDetails">delete</a></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <a href="#" data-bind="click: AddDetails">Add details</a>
+                    </form>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: AddInvoice">Add</button>
+                </div>
+            </div>
+        </div>
+</div>
+<div class="modal fade" id="deleteInvoiceConfirmation" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delete invoice</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span>Are you sure you want to delete invoice ?</span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bind="click: DeleteInvoice">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

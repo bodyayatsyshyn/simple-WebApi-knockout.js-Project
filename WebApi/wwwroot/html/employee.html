@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.0/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="../scripts/employee.js"></script>
+
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/index.html">MyApp</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="../index.html">Home</a>
+                <a class="nav-item nav-link active" href="#">Employee <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link" href="invoice.html">Invoice</a>
+            </div>
+        </div>
+    </nav>
+</header>
+    <div id="employeeContainer">
+        <h2>Employees</h2>
+        <table class="table table-bordered table-striped table-hover table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Date of birth</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: Employees">
+                <tr>
+                    <td data-bind="text: Id"></td>
+                    <td data-bind="text: Name"></td>
+                    <td data-bind="text: Surname"></td>
+                    <td data-bind="text: DateOfBirth"></td>
+                    <td><a href="#" data-bind="click: $parent.TryUpdate">edit</a></td>
+                    <td><a href="#" data-bind="click: $parent.TryDelete">delete</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#createEmployeeModalForm" data-bind="click: resetCurrentEmployee">add new</button>
+    </div>
+    <div class="modal fade" id="deleteEmployeeConfirmation" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete employee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span>Are you sure you want to delete employee ?</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: Delete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editEmployeeModalForm" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit employee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form data-bind="with: CurrentEmployee">
+                        <div class="form-group">
+                            <label for="employeeId" class="col-form-label">Id</label>
+                            <input type="text" class="form-control" id="employeeId" data-bind="value: Id, enable: false">
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeName" name class="col-form-label">Name</label>
+                            <input type="text" class="form-control" id="employeeName" data-bind="value: Name" />
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeSurname" class="col-form-label">Surname</label>
+                            <input type="text" class="form-control" id="employeeSurname" data-bind="value: Surname" />
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeDateOfBirth" class="col-form-label">Date of birth</label>
+                            <input type="date" class="form-control" id="employeeDateOfBirth" data-bind="value: DateOfBirth" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: Update">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createEmployeeModalForm" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create employee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form data-bind="with: CurrentEmployee">
+                        <div class="form-group">
+                            <label for="employeeName" name class="col-form-label">Name</label>
+                            <input type="text" class="form-control" id="employeeName" data-bind="value: Name" />
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeSurname" class="col-form-label">Surname</label>
+                            <input type="text" class="form-control" id="employeeSurname" data-bind="value: Surname" />
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeDateOfBirth" class="col-form-label">Date of birth</label>
+                            <input type="date" class="form-control" id="employeeDateOfBirth" data-bind="value: DateOfBirth" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: Create">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

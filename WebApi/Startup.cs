@@ -19,7 +19,7 @@ namespace WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<WebAppDbContext>(options =>
-                options.UseSqlServer(@"Server=PC;Database=WebAppDatabase;Trusted_Connection=True;"));
+                options.UseSqlServer(@"Server=localhost;Database=WebAppDatabase;Trusted_Connection=True;"));
             services.AddControllers();
         }
 

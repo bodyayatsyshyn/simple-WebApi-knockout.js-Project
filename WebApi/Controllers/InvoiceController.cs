@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
 using System.Threading.Tasks;
 using DBLayer;
 using DBLayer.Models;
@@ -25,6 +26,7 @@ namespace WebApi.Controllers
         public async Task<ActionResult<IEnumerable<dynamic>>> Get()
         {
             var invoices = await _context.Invoices.ToListAsync();
+
             var data = invoices.Join(await _context.Employees.ToListAsync(), i => i.EmployeeId, e => e.Id,
                 (invoice, employee) => new
                 {
@@ -32,9 +34,23 @@ namespace WebApi.Controllers
                     invoice.InvoiceNumber,
                     invoice.ExecutionDate,
                     Sum = invoice.Sum ??= 0,
-                    EmployeeName = employee.Name + ' ' + employee.Surname
+                    EmployeeId = employee.Id,
+                    EmployeeName = employee.Name + ' ' + employee.Surname,
+
+                }).GroupJoin(await _context.Details.ToListAsync(), entry => entry.Id, d => d.InvoiceId,
+                (entry, details) => new
+                {
+                    entry.Id,
+                    entry.InvoiceNumber,
+                    entry.ExecutionDate,
+                    entry.Sum,
+                    entry.EmployeeId,
+                    entry.EmployeeName,
+                    Details = details.Select(d => new {d.Id, d.Description, d.Sum})
+
                 }).ToList();
             data.Sort((first, second) => first.Id.CompareTo(second.Id));
+
             return new ActionResult<IEnumerable<dynamic>>(data);
         }
 
@@ -48,6 +64,16 @@ namespace WebApi.Controllers
             return new ObjectResult(invoice);
         }
 
+        //[Route("/Details")]
+        [HttpGet("/api/[controller]/Details/{id}")]
+        public async Task<ActionResult<Details>> GetTaskDetails(int id)
+        {
+            var details = await _context.Details.Where(d => d.InvoiceId == id).ToListAsync();
+            if (details == null)
+                return NotFound();
+            return new ObjectResult(details);
+        }
+
         // POST api/Invoices
         [HttpPost]
         public async Task<ActionResult<Invoice>> Post(Invoice invoice)
@@ -57,17 +83,21 @@ namespace WebApi.Controllers
                 return BadRequest();
             }
 
-            invoice.Id = 0;
+            invoice.EmployeeId = invoice.Employee.Id;
+            invoice.Employee = null;
+            foreach (var invoiceDetail in invoice.Details)
+            {
+                invoiceDetail.Invoice = invoice;
+            }
             await _context.Invoices.AddAsync(invoice);
             await _context.SaveChangesAsync();
-            return Ok(invoice);
+            return Ok();
         }
 
         // PUT api/Invoices/
         [HttpPut("{id}")]
         public async Task<ActionResult<Invoice>> Put(int id, [FromBody]Invoice invoice)
         {
-            Debug.Write("http put here");
             if (invoice == null)
             {
                 return BadRequest();
@@ -77,9 +107,43 @@ namespace WebApi.Controllers
                 return NotFound();
             }
 
-            _context.Update(invoice);
+            invoice.EmployeeId = invoice.Employee.Id;
+            invoice.Employee = null;
+
+            var dbInvoice = await _context.Invoices.Where(i => i.Id == invoice.Id).Include(i => i.Details).SingleOrDefaultAsync();
+            if (dbInvoice == null)
+                return NotFound();
+
+
+            
+            _context.Entry(dbInvoice).CurrentValues.SetValues(invoice);
+
+            foreach (var dbInvoiceDetail in dbInvoice.Details.ToList())
+            {
+                if (invoice.Details.All(d => d.Id != dbInvoiceDetail.Id))
+                {
+                    _context.Details.Remove(dbInvoiceDetail);
+                }
+            }
+
+            foreach (var invoiceDetail in invoice.Details)
+            {
+                invoiceDetail.InvoiceId = invoice.Id;
+                var dbDetails = dbInvoice.Details.SingleOrDefault(d => d.Id == invoiceDetail.Id);
+                if (dbDetails == null)
+                {
+                    dbInvoice.Details.Add(invoiceDetail);
+                }
+                else
+                {
+                    _context.Entry(dbDetails).CurrentValues.SetValues(invoiceDetail);
+                }
+                await _context.SaveChangesAsync();
+            }
             await _context.SaveChangesAsync();
-            return Ok(invoice);
+
+
+            return Ok();
         }
 
         // DELETE api/Invoices/5
